@@ -41,67 +41,66 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 /**
- * Trieda GraphicInterface obsahuje grafické rozhranie programu a tak isto aj
- * ActionListenery obsluhujúce kľúčové časti programu
+ * Graphical User Interface and main program logic
  *
  * @author Matus Namesny
  */
 public class GraphicInterface extends JFrame {
 
-    private final List<File> createdFiles; // zoznam súborov vytvorených počas behu programu
+    // Definition of window and variables
+    
+    private final List<File> createdFiles;
 
-    private final JTextArea inputTextArea; // sem má užívateľ písať čo počuje aby to program potom mohol skontrolovať
+    private final JTextArea inputTextArea;
     private final JScrollPane scrollPane;
 
-    private File sourceFile = null; // zdrojový súbor
-    private Writer writer; // na zapisovanie do súboru som vytvoril vlastnú triedu Writer
+    private File sourceFile = null;
+    private Writer writer; 
 
     private JRadioButton generRadioButton = new JRadioButton("Generate", true);
     private JRadioButton fileRadioButton = new JRadioButton("From file", false);
     private ButtonGroup buttonGroup = new ButtonGroup();
-    // skupina tlačítok, ktoré zabezpečujú výber zdroja
 
-    private final JButton startButton; // tlačítko štart
-    private JButton browseButton; // tlačítko otvorí JFileChooser na vybranie zdrojového súboru
-    private final JButton checkButton; // tlačítko skontrolovať
+    private final JButton startButton; 
+    private JButton browseButton; 
+    private final JButton checkButton;
 
     private final JPanel startButtonPanel;
     private final JPanel checkButtonPanel;
 
-    private final JSpinner timeSpinner; // slúži na zvolenie času (v minútach)
+    private final JSpinner timeSpinner;
     private final JPanel timeSpinnerPanel;
 
-    private final JSpinner speedSpinner; // zvolenie rýchlosti morzeovky
+    private final JSpinner speedSpinner;
     private final JPanel speedSpinnerPanel;
 
-    private final JComboBox<Integer> sampleRate; // samplovacia frekvencia
-    private final JSlider framesPerWavelength; // počet vzorkov za vlnovú dĺžku
+    private final JComboBox<Integer> sampleRate; 
+    private final JSlider framesPerWavelength; 
 
-    private JFileChooser fileChooser = new JFileChooser(); // slúži na zvolenie zdrojového súboru
+    private JFileChooser fileChooser = new JFileChooser(); 
 
     private JCheckBox alphabetCheckBox = new JCheckBox("Alphabetical", true);
     private JCheckBox numbersCheckBox = new JCheckBox("Numbers");
     private JCheckBox specialCheckBox = new JCheckBox("Special characters");
-    // skupina zaškrtávacých tlačítok na zvolenie rôznych tried znakov pre morzeovku
 
     private final JPanel sourcePanel;
     private final JPanel charPanel;
 
     private final JPanel mainPanel;
 
-    private Timer t1; // prvý časovač meria celkovú dĺžku trénovania morzeovky
-    private Timer t2; // druhý časovač meria meria čas potrebný na zahranie krátkeho znaku (bodky) morzeovky
+    private Timer t1; 
+    private Timer t2; 
 
-    private Sound clip; // clip vytvorený na záklede nastavení užívatela
+    private Sound clip; 
 
-    private InputStreamReader input; // slúži na načítanie vstupu z triedy Source
+    private InputStreamReader input; 
 
-    private Boolean timerPlay; // príznak, že prvý časovač beží
-    private Boolean buttonPlay; // príznak, že bolo stlačené tlačítko štart
+    private Boolean timerPlay;
+    private Boolean buttonPlay; 
 
     /**
-     * Konštruktor vytvorý všetky komponenty a rozloží ich na JFrame.
-     * Inicializuje ostatné premenné na ich počiatočné hodnoty
+     * Creates window with all defined components
+     * Initializes all variables
      */
     public GraphicInterface() {
 
@@ -112,18 +111,15 @@ public class GraphicInterface extends JFrame {
         setLayout(new GridBagLayout());
         setLocationRelativeTo(null);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-        // nastavý rozloženie okna na GridBagLayout, okno sa bude otvárať v strede obrazovky, a pri zatvorení okna sa okno skryje
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            // nastavý vzhľad na systémový vzhľad
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.getLogger(GraphicInterface.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        // inicializácia hlavného panelu
 
         Integer[] rates = {
             8000, 11025, 16000, 22050};
@@ -131,7 +127,7 @@ public class GraphicInterface extends JFrame {
         sampleRate.setToolTipText("Samples per second");
         sampleRate.setSelectedIndex(1);
         sampleRate.setBorder(new TitledBorder("Sample rate"));
-        // inicializácia nastavenia samplovacej frekvencie
+        // Sample rate settings
 
         framesPerWavelength = new JSlider(JSlider.HORIZONTAL, 10, 200, 25);
         framesPerWavelength.setPaintTicks(true);
@@ -139,18 +135,16 @@ public class GraphicInterface extends JFrame {
         framesPerWavelength.setMinorTickSpacing(5);
         framesPerWavelength.setToolTipText("Frames per Wavelength");
         framesPerWavelength.setBorder(new TitledBorder("Frames per wavelength"));
-        // inicializácia nastavenie počtu vzorkov za vlnovú dĺžku
+        // Frames per wavelength settings
 
         browseButton = new JButton("Browse");
         browseButton.setEnabled(false);
         browseButton.setToolTipText("Select file");
-        // inicializácia tlačítka browse
 
         createdFiles = new ArrayList<>();
-        // inicializácia zoznamu vytvorených súborov
 
         browseButton.addActionListener((ActionEvent e) -> {
-            // pri kliknutí na tlačítko browse sa otvorý súborový manažér na vybranie zdrojového súboru
+            // selecting input file
             int returnVal = fileChooser.showOpenDialog(null);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -160,7 +154,6 @@ public class GraphicInterface extends JFrame {
         });
 
         fileRadioButton.addActionListener((ActionEvent e) -> {
-            // ak užívateľ zvolí ako zdroj súbor tlačítko browse sa aktivuje a deaktivujú sa tlačítka na zvolenie tried znakov
 
             browseButton.setEnabled(true);
             alphabetCheckBox.setEnabled(false);
@@ -169,8 +162,6 @@ public class GraphicInterface extends JFrame {
         });
 
         generRadioButton.addActionListener((ActionEvent e) -> {
-            // ak užívateľ zvolí ako zdroj generovanie znakov deaktivuje sa tlačítko browse a aktivujú sa tlačítka na zvolenie tried znakov
-            // zdrojový súbor sa nastaví na null
 
             sourceFile = null;
             browseButton.setEnabled(false);
@@ -186,7 +177,6 @@ public class GraphicInterface extends JFrame {
 
         inputTextArea = new JTextArea(8, 40);
         inputTextArea.setLineWrap(true);
-        // nastaví veľkosť a zalomenie textu
 
         scrollPane = new JScrollPane(getInputTextArea());
         scrollPane.setBorder(new TitledBorder("User input"));
@@ -197,42 +187,39 @@ public class GraphicInterface extends JFrame {
         sourcePanel.add(generRadioButton);
         sourcePanel.add(fileRadioButton);
         sourcePanel.add(browseButton);
-        // panel na nastavenie zdroja
 
         timeSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 60, 1));
         timeSpinner.setToolTipText("Set time in minutes");
         timeSpinnerPanel = new JPanel();
         timeSpinnerPanel.setBorder(new TitledBorder("Set time"));
         timeSpinnerPanel.add(timeSpinner);
-        // inicializácia nastavenia času
+        // time settings
 
         speedSpinner = new JSpinner(new SpinnerNumberModel(20, 5, 60, 1));
         speedSpinner.setToolTipText("Set speed in WPM (Words per minute)");
         speedSpinnerPanel = new JPanel();
         speedSpinnerPanel.setBorder(new TitledBorder("Set speed"));
         speedSpinnerPanel.add(speedSpinner);
-        // inicializácia nastavenia rýchlosti
+        // speed settings
 
         charPanel = new JPanel();
         charPanel.setBorder(new TitledBorder("Set characters"));
         charPanel.add(alphabetCheckBox);
         charPanel.add(numbersCheckBox);
         charPanel.add(specialCheckBox);
-        // inicializácia nastavenia tried znakov
+        // character classes settings
 
         startButton = new JButton("Start");
         startButton.addActionListener(new Start());
         startButtonPanel = new JPanel(new GridLayout());
         startButtonPanel.add(startButton);
         startButtonPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        // inicializácia tlačítka štart
 
         checkButton = new JButton("Check");
         checkButton.addActionListener(new Check());
         checkButtonPanel = new JPanel(new GridLayout());
         checkButtonPanel.add(checkButton);
         checkButtonPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        // inicializácia tlačítka skontrolovať
 
         frameConstraints.gridx = 0;
         frameConstraints.gridy = 0;
@@ -295,10 +282,9 @@ public class GraphicInterface extends JFrame {
         mainPanel.setSize(getPreferredSize());
         add(mainPanel);
         pack();
-        // pridanie všetkých prvkov na hlavný JFrame
 
-        timerPlay = false; // prvý časovač na začiatku nebeží
-        buttonPlay = false; // tlačítko štart ešte nebolo stlačené
+        timerPlay = false; 
+        buttonPlay = false;
 
     }
 
@@ -499,25 +485,24 @@ public class GraphicInterface extends JFrame {
     }
 
     /**
-     * Trieda Beat načítava znaky zo zdroja (trieda Source), prekladá ich do
-     * morzeovky a postupne ich prehrá
+     * Class Beat reads characters from Source, translates them into morse code and plays them
      */
     private class Beat implements ActionListener {
 
-        private final Deque<Boolean> morseQ; // fronta preložených znakov do morzeovky, ak je daný prvok True tak clip hrá inak nie
-        private final Deque<Integer> charQ; // fronta znakov načítaných zo zdroja
+        private final Deque<Boolean> morseQ; // Queue of translated characters
+        private final Deque<Integer> charQ; // Queue of input characters
 
-        private final Boolean write; // True ak sú znaky generované
+        private final Boolean write; // True if characters are generated
 
-        private int n; // počet prehraných znakov v jednej skupine piatich znakov
-        Boolean readNext; // True ak ešte neskončil zdrojový súbor alebo časový limit
+        private int n; // number of played characters in a group of 5
+        Boolean readNext;
 
-        char[] morseChars; // pole morzeovkových symbolov, ktoré reprezentujú daný znak
+        char[] morseChars;
 
         /**
-         * Konštruktor triedy inicializuje fronty a ďalšie premenné
+         * Initializations of variables
          *
-         * @param write Parameter write je True ak sú znaky generované
+         * @param write = True if new characters are generated
          */
         public Beat(Boolean write) {
             morseQ = new ArrayDeque<>();
@@ -525,7 +510,6 @@ public class GraphicInterface extends JFrame {
             for (int i = 0; i < 5; i++) {
                 morseQ.add(false);
             }
-            // na začiatku program nehrá nič aby mal užívateľ čas sa pripravyť 
 
             charQ = new ArrayDeque<>();
             n = 0;
@@ -535,8 +519,7 @@ public class GraphicInterface extends JFrame {
         }
 
         /**
-         * Metóda sa spustí keď dobehne druhý časovač. Načíta znak zo vstupu,
-         * preloží ho do morzeovky a zahrá jeden zo symbolov.
+         * Reads character from Source, translates it and puts it into queue
          *
          * @param e
          */
@@ -544,10 +527,10 @@ public class GraphicInterface extends JFrame {
         public void actionPerformed(ActionEvent e) {
 
             if (charQ.size() < (5 - n) && (readNext)) {
-                // veľkosť fronty znakov je obmedzená na práve hrajúcu skupinu piatich znakov aby sa tam zbytočne nehromadili neprehrané znaky 
+                // size of character queue is limited to currently played group of 5
                 try {
-                    int x = getInput().read(); // načíta znak zo zdroja
-                    if (x == -1) { // koniec vstupu
+                    int x = getInput().read(); 
+                    if (x == -1) { 
                         readNext = false;
                     } else {
                         charQ.addLast(x);
@@ -558,19 +541,19 @@ public class GraphicInterface extends JFrame {
             }
 
             if (!getTimerPlay()) {
-                readNext = false; // koniec časového limitu
+                readNext = false; 
             }
 
             if ((morseQ.size() < 20) && (charQ.size() > 0)) {
-                // veľkosť morzeovkovej fronty je obmedzená na 20 aby sa nehromadili neprehrané symboly
+                // the size of morse code queue is limited to 20 
                 try {
-                    int x = charQ.removeFirst(); // vybere prvý znak z fronty znakov
+                    int x = charQ.removeFirst(); 
 
-                    n = (n + 1) % 5; // počet znakov v práve hrannej skupine
+                    n = (n + 1) % 5; 
 
-                    morseChars = toMorse((char) x).toCharArray(); // preloží do morzeovky daný znak
+                    morseChars = toMorse((char) x).toCharArray(); // translates character
                     for (char morseChar : morseChars) {
-                        // danú postupnosť morzeovkových symbolov preloží do postupnosti booleanov
+
                         switch (morseChar) {
                             case '.':
                                 morseQ.addLast(true);
@@ -596,10 +579,10 @@ public class GraphicInterface extends JFrame {
 
                     if (write) {
                         getWriter().write((char) x);
-                        // zapíše znak do súboru pre neskoršiu kontrolu užívateľa
+                        // writes character to file for later check
                     }
 
-                    if ((n == 0) && write) { // v prípade, že je koniec skupiny 5 znakov
+                    if ((n == 0) && write) {
                         for (int i = 0; i < 4; i++) {
                             morseQ.addLast(false);
                         }
@@ -613,7 +596,6 @@ public class GraphicInterface extends JFrame {
 
             try {
                 Boolean next = morseQ.removeFirst();
-                // vybere nasledujúcu hodnotu z fronty, ak je True clip sa začne prehrávať. Ak je False clip sa zastaví
 
                 if (next) {
                     if (!clip.getClip().isActive()) {
@@ -625,15 +607,13 @@ public class GraphicInterface extends JFrame {
                     }
                 }
             } catch (Exception e2) {
-                // ak je morzeovková fronta prázdna, prehrávanie sa zastaví
                 stop();
             }
 
         }
 
         /**
-         * Zastaví prehrávanie. Zastaví časovač, obnoví nastavenia na tlačítkach
-         * štart a skontrolovať a zatvorí výstup.
+         * Stops playing and resets program
          */
         private void stop() {
             getT2().stop();
@@ -647,11 +627,10 @@ public class GraphicInterface extends JFrame {
         }
 
         /**
-         * Preloží daný znak do morzeovky. Preklad prebieha jednoduchým
-         * vyhľadávaním v poli.
+         * Translates character to morse code
          *
-         * @param alpha znak na preloženie
-         * @return postupnosť znakov morzeovky, ktoré reprezentujú daný znak
+         * @param alpha = character to translate
+         * @return = string of morse code
          */
         private String toMorse(char alpha) {
             char[] alphanumArr = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
@@ -677,13 +656,12 @@ public class GraphicInterface extends JFrame {
     }
 
     /**
-     * Trieda Check zabezpečuje skontrolovanie užívateľovho vstupu
+     * Checks user output
      */
     private class Check implements ActionListener {
 
         /**
-         * Skontrolovanie vstupu prebieha postupným porovnávaním jednotlivých
-         * znakov a vypísanie prípadných chýb
+         * checks user output
          *
          * @param e
          */
@@ -692,9 +670,9 @@ public class GraphicInterface extends JFrame {
 
             getInputTextArea().append("  ");
 
-            String userString = getInputTextArea().getText(); // užívateľov vstup
+            String userString = getInputTextArea().getText(); // user output
             if (userString == null || userString.isEmpty()) {
-                JOptionPane.showMessageDialog(rootPane, "There is nothing to check"); // v prípade, že užívateľ nič nenapísal
+                JOptionPane.showMessageDialog(rootPane, "There is nothing to check");
             } else {
 
                 try (FileReader sourceFileReader = new FileReader(getSourceFile())) {
@@ -707,23 +685,23 @@ public class GraphicInterface extends JFrame {
                     int misstakes = 0;
 
                     x = sourceFileReader.read();
-                    while ((x != -1) && (x != 10)) { // prejde celý zdrojový súbor
+                    while ((x != -1) && (x != 10)) { 
 
                         if (i >= userString.length()) {
-                            y = '_'; // v prípade, že užívateľov vstup už je na konci
+                            y = '_'; 
                         } else {
-                            y = Character.toUpperCase(userString.charAt(i)); // porovnávam len veľké písmená
+                            y = Character.toUpperCase(userString.charAt(i)); 
                         }
-                        if (Character.toUpperCase(x) != y) { // znaky sa nezhodujú
+                        if (Character.toUpperCase(x) != y) { 
                             misstakes++;
                             getInputTextArea().append(String.format("%5s | %-5s - %d\n", String.valueOf((char) y), String.valueOf((char) x), i));
-                            // vypíše chybný znak, správny znak a index chyby
+                            // prints wrong character, correct character and index of mistake
                         }
                         i++;
                         x = sourceFileReader.read();
                     }
 
-                    getInputTextArea().append("Misstakes: " + misstakes); // vypíše celkový počet chýb
+                    getInputTextArea().append("Misstakes: " + misstakes); // number of mistakes
                 } catch (IOException ex) {
                     Logger.getLogger(GraphicInterface.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -734,26 +712,24 @@ public class GraphicInterface extends JFrame {
     }
 
     /**
-     * Trieda Start je potrebná na začatie prehrávania morzeovky
+     * Start of playing of morse code
      */
     private class Start implements ActionListener {
 
         /**
-         * Vytvorí potrebné objekty na prehrávanie morzeovky. Inicializuje
-         * triedy Beat, Source a Sound. Nastaví prvý a druhý časovač a spustí
-         * ich.
+         * Initialization of classes Beat, Source, Sound and necessary variables
          *
          * @param e
          */
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            if (!sourceCheck()) { // v prípade, že nie je nastavený zdroj
+            if (!sourceCheck()) { 
                 JOptionPane.showMessageDialog(rootPane, "No source specified", "Source error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            if (getButtonPlay()) { // ak už bolo tlačítko štart stlačené a morzeovka sa prehráva, tlačítko potom slúži na zastavenie prehrávania
+            if (getButtonPlay()) { 
 
                 setButtonPlay(false);
                 getT2().stop();
@@ -764,10 +740,9 @@ public class GraphicInterface extends JFrame {
                 getWriter().close();
 
             } else {
-                setClip(new Sound((int) getSampleRate().getSelectedItem(), getFramesPerWavelength().getValue())); // nastaví clip
-                getInputTextArea().setText(""); // vymaže užívateľov predchádzajúci vstup
+                setClip(new Sound((int) getSampleRate().getSelectedItem(), getFramesPerWavelength().getValue()));
+                getInputTextArea().setText(""); 
                 if (getGenerRadioButton().isSelected()) {
-                    // ak je ako zdroj nastavené generovanie
 
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
                     String fileName = sdf.format(new Date());
@@ -779,7 +754,6 @@ public class GraphicInterface extends JFrame {
                     }
                     getCreatedFiles().add(getSourceFile());
                     setWriter(new Writer(getSourceFile()));
-                    // vytvorí súbor do ktorého bude trieda Beat zapisovať prehrávané znaky pre prípadnú kontrolu
 
                     Boolean[] chars = {false, false, false};
                     if (getAlphabetCheckBox().isSelected()) {
@@ -791,21 +765,19 @@ public class GraphicInterface extends JFrame {
                     if (getSpecialCheckBox().isSelected()) {
                         chars[2] = true;
                     }
-                    // nastaví triedy znakov
 
                     setInput(new InputStreamReader(new Source(chars)));
-                    // vytvorí vstup
 
                     setT1(new Timer((int) getTimeSpinner().getValue() * 60 * 1000, (ActionEvent e1) -> {
-                        setTimerPlay(false); // keď dobehne prvý časovač nastaví sa príznak na False
+                        setTimerPlay(false); 
                         getT1().stop();
                     }));
                     getT1().start();
-                        // nastaví a spustí časovač
+                        
 
-                } else { // ako zdroj je vybraný súbor
+                } else { 
                     try {
-                        setInput(new InputStreamReader(new Source(getSourceFile()))); // vytvorí vstup
+                        setInput(new InputStreamReader(new Source(getSourceFile()))); 
 
                     } catch (FileNotFoundException ex) {
                         Logger.getLogger(GraphicInterface.class.getName()).log(Level.SEVERE, null, ex);
@@ -814,13 +786,12 @@ public class GraphicInterface extends JFrame {
 
                 setTimerPlay(true);
                 setButtonPlay(true);
-                // nastaví oba príznaky na True
 
                 int delay = 1200 / ((int) getSpeedSpinner().getValue());
                 Beat beat = new Beat(getGenerRadioButton().isSelected());
                 setT2(new Timer(delay, beat));
                 getT2().start();
-                // nastaví čas druhého časovača podľa zvolenej rýchlosti, vytvorí instanciu triedy Beat a spustí druhý časovač
+                // calculates speed and sets the second timer
 
                 getStartButton().setText("Stop");
                 getCheckButton().setEnabled(false);
@@ -829,9 +800,9 @@ public class GraphicInterface extends JFrame {
         }
 
         /**
-         * Skontroluje či je zvolený zdroj
+         * Chcecks if source is selected
          *
-         * @return true ak je zdroj zvolený, inak false
+         * @return 
          */
         public Boolean sourceCheck() {
 
@@ -843,19 +814,17 @@ public class GraphicInterface extends JFrame {
                 } else {
                     return getSpecialCheckBox().isSelected();
                 }
-                // ak je zvolené generovanie, musí byť zaškrtnuté aspoň jedno tlačítko so symbolmi
-
+                
             } else {
                 return getSourceFile() != null;
-                // ak je zvolený ako zdroj súbor, potom nesmie byť null
+            
             }
         }
 
     }
 
     /**
-     * Trieda Writer zabezpečuje zapisovanie prehrávaných znakov do súboru pre
-     * prípadné skontrolovanie, v prípade, že je zvolené generovanie
+     * Writes played character into a file for check
      */
     private class Writer {
 
@@ -863,7 +832,7 @@ public class GraphicInterface extends JFrame {
         FileWriter fw;
 
         /**
-         * Konštruktor vytvorí FileWriter k danému súboru
+         * Creates FileWriter 
          *
          * @param file
          */
@@ -877,10 +846,9 @@ public class GraphicInterface extends JFrame {
         }
 
         /**
-         * Zapíše do súboru zadaný znak, v prípade výnimky sa pokúsi výstup
-         * zavrieť
+         * Writes character to a file
          *
-         * @param a znak, ktorý sa má zapísať
+         * @param a = character to write
          */
         public void write(char a) {
             try {
@@ -896,7 +864,7 @@ public class GraphicInterface extends JFrame {
         }
 
         /**
-         * Zatvorí výstup
+         * Closes the output
          */
         public void close() {
             try {
