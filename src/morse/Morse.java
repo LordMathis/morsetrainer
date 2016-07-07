@@ -6,18 +6,17 @@ import java.awt.event.ComponentEvent;
 import javax.swing.SwingUtilities;
 
 /**
- * Trieda Morse obsahuje metódu main()
+ * Morse class contains main() method
  *
  * @author Matus Namesny
  */
 public class Morse {
 
     /**
-     * V main() sa vytvorý nové vlákno s grapfickým rozhraním, ktoré je v triede
-     * GraphicInterface. Zároveň sa pri zatvorení okna programu spustí metóda,
-     * ktorá vymaže všetky súbory, ktoré boli vytvorené počas behu programu.
+     * main() creates new thread with gui (located in GraphicInterface class)
+     * At the end the method cleans up all created files.
      *
-     * @param args Parametre príkazovej riadky sa v tomto programe nevyužívajú.
+     * @param args Command line arguments are not used
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -26,11 +25,11 @@ public class Morse {
             gi.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentHidden(ComponentEvent e) {
-                    // Vymaže každý súbor zo zoznamu vytvorených súborov.
+                    // Deletes file from list of temp files created during program run
                     gi.getCreatedFiles().stream().forEach((file) -> { 
                         file.delete();
                     });
-                    ((Window) (e.getComponent())).dispose(); // Zatvorý okno a ukončí program
+                    ((Window) (e.getComponent())).dispose(); // Closes the window
                 }
             });
         });
