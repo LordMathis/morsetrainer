@@ -12,7 +12,7 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 
 /**
- * Trieda Sound obsahuje nastavenia tónu pre morzeovku.
+ * Tone settings
  * @author Matus Namesny
  */
 public class Sound {
@@ -20,9 +20,9 @@ public class Sound {
     private Clip clip;
 
     /**
-     * V konštruktore sa nastaví Clip, teda tón pre morzeovku
-     * @param intSR Parameter intSR je vzorkovacia frekvencia pre samplovanie klipu.
-     * @param intFPW Parameter intFPW je počet vzorkov na vlnovú dĺžku pre samplovanie klipu.
+     * Tone settings are stored in Clip class
+     * @param intSR = sample rate
+     * @param intFPW = frames per wavelength
      */
     public Sound(int intSR, int intFPW) {
         try {
@@ -33,16 +33,15 @@ public class Sound {
             int wavelengths = 20; 
             byte[] buf = new byte[2 * intFPW * wavelengths];
             
-            AudioFormat af = new AudioFormat( // Vytvorý AudioFormat, ktorý je potrebný na vytvorenie AudioInputStream
-                    sampleRate, // vzorkovacia frekvencia
-                    8, // veľkosť vzorku v bitoch
-                    2, // počet kanálov
-                    true, // so znamienkom
+            AudioFormat af = new AudioFormat( // AudioFormat is needed to create AudioInputStream
+                    sampleRate, 
+                    8, // sample size in bits
+                    2, // number of channels
+                    true, // signed
                     false // big endian
             );
 
-            // Vytvorý pole bytových hodnôt v rôznych bodoch sínusoidy.
-            // Toto pole slúži ako buffer pre ByteArrayInputStream
+            // Buffer array for ByteArrayInputStream
             for (int i = 0; i < intFPW * wavelengths; i++) {
                 double angle = ((i * 2) / ((float) intFPW)) * (Math.PI);
                 buf[i * 2] = getByteValue(angle);
@@ -50,13 +49,12 @@ public class Sound {
             }
             byte[] b = buf;
             
-            // Vytvorý AudioInputStream zo zadaných hodnôt InputStream, AudioFormat a dĺžky
             AudioInputStream ais = new AudioInputStream(
-                    new ByteArrayInputStream(b), // ByteArrayInputStream, ktorý používa b ako buffer pole
+                    new ByteArrayInputStream(b),
                     af, // AudioFormat
-                    buf.length / 2); // Dĺžka AudioInputStream
+                    buf.length / 2); // length of AudioInputStream
 
-            clip.open(ais); // Otvorý Clip, to, že je clip otvorený znamená, že ho môžu používať ďalšie metódy
+            clip.open(ais); // Clip can be used by other methods
 
         } catch (LineUnavailableException | IOException ex) {
             Logger.getLogger(GraphicInterface.class.getName()).log(Level.SEVERE, null, ex);
@@ -64,7 +62,7 @@ public class Sound {
 
     }
 
-    // Vráti hodnotu v bytoch v danom bode sínusovej vlny
+    // returns byte value at a point on sinus wave
     private byte getByteValue(double angle) {
         int maxVol = 127;
         return (new Integer(
@@ -74,7 +72,7 @@ public class Sound {
     }
 
     /**
-     * @return the clip Vráti javax.sound.sampled.Clip, ktorý sa nastaví v konštruktore triedy Sound
+     * @return the clip
      */
     public Clip getClip() {
         return clip;
