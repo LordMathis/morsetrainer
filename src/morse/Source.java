@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Trieda Source zabezpečuje zdroj znakov na prehrávanie v morzeovke, či už sa
- * majú generovať, alebo čítať zo súboru. Trieda rozširuje triedu InputStream a
- * návrat znakov na prehrávanie je zabezpečený pomocou metódy read()
+ * The Source class is the source of characters to be played in morse code. 
+ * The characters are either generated or read from a file. The class extends InputStream.
+ * New characters are returned by read method
  *
  * @author Matus Namesny
  */
@@ -25,13 +25,10 @@ public class Source extends InputStream {
     private final Boolean gener;
 
     /**
-     * Konštruktor triedy Source s parametrom File sa spustí v prípade, že
-     * užívatel zvolí ako zdroj súbor
+     * New characters will be read from a file instead of being generated
      *
-     * @param file Parameter file reprezentuje zdrojový súbor z ktorého bude
-     * morzeovka prehrávaná v prípade, že užívatel zvolil ako zdroj súbor
-     * @throws FileNotFoundException Táto výnimka bude vyhodená v prípade, že
-     * zadaný súbor neexistuje
+     * @param file - the source file from which the new characters will be read
+     * @throws FileNotFoundException
      */
     public Source(File file) throws FileNotFoundException {
         gener = false;
@@ -40,14 +37,9 @@ public class Source extends InputStream {
     }
 
     /**
-     * Konštruktor triedy Source s parametrom Boolean[] sa spustí v prípade, že
-     * užívatel zvolí možnosť vygenerovať znaky, ktoré sa budú hrať. V
-     * konštruktore sa vytvorí pole možných znakov a nastavý sa príznak gener,
-     * ktorý znamená, že pri spustení metódy read() sa má ďalší znak generovať a
-     * nie čítať zo súboru
+     * New characters will be randomly generated
      *
-     * @param chars Parameter chars je pole booleanov. Prvky poľa značia
-     * jednotlivé triedy znakov, ktoré sa budú prehrávať.
+     * @param chars - each cell of array of booleans represents character class
      */
     public Source(Boolean[] chars) {
         gener = true;
@@ -105,26 +97,26 @@ public class Source extends InputStream {
     }
 
     /**
-     * Vygeneruje, alebo načíta zo súboru znaky, ktoré sa majú prehrávať
+     * Either reads new character from a given file or generates one
      *
-     * @return znak, ktorý sa má prehrávať
+     * @return new character
      * @throws IOException
      */
     @Override
     public int read() throws IOException {
-        if (gener) { //ak treba nový znak vygenerovať
+        if (gener) { //new character is generated
             int x = random.nextInt(alphaArr.length);
-            return alphaArr[x]; //vráti sa znak z tabuľky znakov s indexom náhodného integeru
+            return alphaArr[x];
         } else {
 
             int x = fr.read();
 
-            // Vďaka tomuto while cyklu sa preskočia všetky znaky, ktoré nemajú svoj ekvivalent v morzeovke
+            // skips characters which don't have morse code equivalent
             while (!Character.isLetterOrDigit(x) && x != '?' && x != '=' && x != '/' && x != ' ' && x != -1 && x != 10) {
                 x = fr.read();
             }
 
-            if ((x == 10) || (x == -1)) { // V prípade, že sme na konci súboru
+            if ((x == 10) || (x == -1)) { // end of file
                 return -1;
             } else {
                 return Character.toUpperCase(x);
